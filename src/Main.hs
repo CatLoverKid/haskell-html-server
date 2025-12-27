@@ -1,39 +1,37 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE OverloadedStrings #-}
 
 module Main where
 
 import Data.Proxy
 import Network.Wai.Handler.Warp
 import Servant
-import Servant.HTML.Blaze (HTML)
-import Text.Blaze.Html5 ((!))
-import qualified Text.Blaze.Html5 as H
-import qualified Text.Blaze.Html5.Attributes as A
+import Servant.Server.StaticFiles (serveDirectoryFileServer)
+import System.Environment (getArgs)
+import System.Exit (die)
+import Text.Read (readMaybe)
 
-type API = Get '[HTML] H.Html
+-- Serve static files from a directory
+type API = Raw
 
 api :: Proxy API
 api = Proxy
 
-homePage :: H.Html
-homePage = H.docTypeHtml $ do
-  H.head $ do
-    H.title "Anthony Keba"
-    H.meta ! A.charset "utf-8"
-  H.body $ do
-    H.h1 "Welcome to my web page"
-    H.p "This is a simple Haskell web server running on NixOS! ❄️  "
+server :: FilePath -> Server API
+server staticDir = serveDirectoryFileServer staticDir
 
-
-server :: Server API
-server = return homePage
-
-app :: Application
-app = serve api server
+app :: FilePath -> Application
+app staticDir = serve api (server staticDir)
 
 main :: IO ()
 main = do
-  putStrLn "starting server on port 8080..."
-  run 8080 app
+  args <- getArgs
+  (port, staticDir) <- case args of
+    [portStr, dir] -> case readMaybe portStr of
+      Just p -> return (p, dir)
+      Nothing -> die $ "Invalid port: " ++ portStr
+    _ -> die "Usage: haskell-html-server <port> <static-directory>"
+  
+  putStrLn $ "Starting server on port " ++ show port ++ "..."
+  putStrLn $ "Serving files from: " ++ staticDir
+  run port (app staticDir)

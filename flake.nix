@@ -27,6 +27,7 @@
           servant-blaze
           warp
           blaze-html
+          wai-app-static
         ];
         
         nativeBuildInputs = with pkgs; [
