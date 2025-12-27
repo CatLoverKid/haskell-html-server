@@ -1,5 +1,6 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Main where
 
@@ -27,12 +28,12 @@ homePage = H.docTypeHtml $ do
 
 
 server :: Server API
-server = return homepage
+server = return homePage
 
 app :: Application
 app = serve api server
 
 main :: IO ()
 main = do
-  putStrLn "starting server on port 443..."
-  run 443 app
+  putStrLn "starting server on port 8080..."
+  run 8080 app
